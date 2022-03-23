@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>carto_navigation</name>
+  <name>sb_carto_navigation</name>
   <version>0.0.0</version>
   <description>The carto_navigation package</description>
 

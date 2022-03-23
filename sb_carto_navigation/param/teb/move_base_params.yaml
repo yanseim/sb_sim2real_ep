@@ -6,9 +6,9 @@ shutdown_costmaps: false
 #控制周期和发布速度指令的频率/HZ
 controller_frequency: 50.0
 #等待规划的最长时间
-planner_patience: 5.0
+planner_patience: 0.0
 #等待指令的最长时间
-controller_patience: 0.0
+controller_patience: 1.0
 #障碍物距离
 conservative_reset_dist: 3.0
 #global planning运行频率

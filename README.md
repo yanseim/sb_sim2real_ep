@@ -18,7 +18,7 @@ python3 -m pip install -U scipy
 * run roscore, server, keyboard
 * remember to publish tf!
     ```
-    roslaunch ep_descreption ep_description.launch
+    roslaunch sb_ep_descreption ep_description.launch
     ```
 * run sb_detect_cube.py
 * run sb_grasp_cube_server.py, sb_place_cube_server.py (maybe have error, leave them alone)

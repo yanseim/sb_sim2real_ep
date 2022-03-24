@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- navigation -->
+  <include file="$(find sb_carto_navigation)/launch/navigation.launch"/>
+
+  <!-- static tf -->
+  <include file="$(find sb_ep_description)/launch/ep_description.launch"/>
+
+  <!-- detection -->
+  <node pkg="sb_ep_detect_and_grasp" name="marker_detection" type="sb_detect_cube" />
+
+  <!-- grasp -->
+  <node pkg="sb_ep_detect_and_grasp" name="grasp_server" type="sb_grasp_cube_server" />
+
+  <!-- place -->
+  <node pkg="sb_ep_detect_and_grasp" name="place_server" type="sb_place_cube_server" />
+
+  <!-- brain -->
+  <node pkg="sb_brain" name="brain" type="sb_brain" />
+
+</launch>

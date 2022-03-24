@@ -22,4 +22,4 @@ python3 -m pip install -U scipy
     ```
 * run sb_detect_cube.py
 * run sb_grasp_cube_server.py, sb_place_cube_server.py (maybe have error, leave them alone)
-* modify test_grasp_place_client.py accorfing to your situations and run test_grasp_place_client.py
+* modify test_grasp_place_client.py according to your situations and run test_grasp_place_client.py

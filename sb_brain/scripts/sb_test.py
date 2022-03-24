@@ -1,4 +1,4 @@
-#!/bin/python3
+#! /usr/bin/python3
 
 import rospy
 import numpy as np
@@ -100,10 +100,15 @@ class Brain(object):
 
 if __name__ == "__main__":
     rospy.init_node('brain_node')
-    brain = Brain()
+    tf_buffer = tf2_ros.Buffer()
+    tf_listener = tf2_ros.TransformListener(tf_buffer)
+
+    tf_static_broadcaster = tf2_ros.StaticTransformBroadcaster()
+    tf_broadcaster =tf2_ros.TransformBroadcaster()
 
     rospy.sleep(0.5)
-    while 1:
-        if not brain.tf_buffer.can_transform("odom","map",rospy.Time.now()):
+    try:
+        if not tf_buffer.can_transform("odom","map",rospy.Time.now()):
             rospy.logwarn("fuck!!!!!!!")
+    except
 

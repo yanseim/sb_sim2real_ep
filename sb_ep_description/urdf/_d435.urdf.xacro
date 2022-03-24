@@ -132,6 +132,7 @@ _
         <child link="${name}_aligned_depth_to_color_frame_correct" />
       </joint>
       <link name="${name}_aligned_depth_to_color_frame_correct"/>
+      
     </xacro:if>
 
     <xacro:if value="${add_plug}">

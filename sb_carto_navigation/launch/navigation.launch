@@ -14,7 +14,7 @@
           args="-d $(find sb_carto_navigation)/rviz/navigation.rviz"/>
           
   <!-- robot_description -->
-  <include file="$(find ep_description)/launch/ep_description.launch"/>
+  <include file="$(find sb_ep_description)/launch/ep_description.launch"/>
   
   <!-- bringup -->
   <include file="$(find ep_bringup)/launch/bringup.launch"/>

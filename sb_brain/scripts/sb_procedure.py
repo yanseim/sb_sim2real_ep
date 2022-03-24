@@ -31,6 +31,11 @@ cube_positions =[[1.00058174,0.09497403,3.39986682,-0.00076221,-0.00130864640232
 [2.5751845836639404,0.08210877216421068,1.8196847438812256,0,0,0,-1]]
 
 
+GOAL_POS_THRE = 0.1
+GOAL_ANGLE_THRE = 0.1
+CMD_VEL_THRE = 0.05
+
+
 class Brain(object):
     def __init__(self):
         rospy.loginfo("initing!!!!!!!!")
@@ -43,11 +48,12 @@ class Brain(object):
         self.cube1_pose = None
         self.finished = False
 
-        self.current_loc = [0.0,0.0]
-
+        self.current_pos = [0.0,0.0]
+        self.state = 'initial'
         self.rate=rospy.Rate(30)
         # publish the world coordinate
         self.publish_world_tf()
+
 
         # calculate all 8 key positions in map pose
         self.key_position_in_map_pose = []
@@ -57,15 +63,21 @@ class Brain(object):
         self.goal_reached_check = False
         self.current_goal = -1
         self.reach_goal_state = -1
+        self.cmd_vel = None
 
+        rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback)
         rospy.Subscriber('/op/odom',Odometry,self.keyLocCheck)
         # rospy.Subscriber
         
+
+        rospy.wait_for_service('place_')
+        self.place_cli = rospy.ServiceProxy('place_', grasp_place)
+
         self.nav_goal_publisher = rospy.Publisher('/move_base_simple/goal',PoseStamped)
 
 
     def publish_world_tf(self):
-        rospy.loginfo("world tf is publishing!!!!!!!!!!!!!!!!!!!!!!!!!")
+        rospy.loginfo("world tf is publishing!")
         trans = [4.2,0,3.5]
         rot_matrix = np.array([[0,-1,0],[0,0,1],[-1,0,0]])
         trans_map2world = np.zeros((4,4))
@@ -117,7 +129,7 @@ class Brain(object):
         self.nav_goal_publisher.publish(goal)
         rospy.loginfo("i have published cube 1 goal---------------")
         rospy.loginfo(goal_map)
-        self.current_goal = [goal.pose.position.x,goal.pose.position.y]
+        self.current_goal = goal.pose
 
 
     def publish_nav_goal(self):
@@ -131,7 +143,39 @@ class Brain(object):
         goal_map.orientation.z = quat[2]
         goal_map.orientation.w = quat[3]
 
-        self.nav_goal_pub(goal_map)      
+        self.nav_goal_pub(goal_map)  
+
+    def keyLocCheck(self,msg):
+        curr = msg.pose.pose
+        current_pos = np.array([curr.position.x, curr.position.y])
+        current_quat = np.array([curr.orientation.x, curr.orientation.y, curr.orientation.z, curr.orientation.w])
+
+        goal = self.current_goal
+        goal_pos = np.array([goal.position.x, goal.position.y])
+        goal_quat = np.array([goal.orientation.x, goal.orientation.y, goal.orientation.z, goal.orientation.w])
+
+        position_error = np.linalg.norm(current_pos - goal_pos)
+        angle_error = np.abs((R.from_quat(goal_quat) * R.from_quat(current_quat).inv()).as_euler('ZYX')[0])    
+
+        # debug
+        rospy.logdebug("xy: " + str(position_error) + "    , angle:" + str(angle_error) )
+
+        if (position_error < GOAL_POS_THRE and angle_error < GOAL_ANGLE_THRE) and np.linalg.norm(self.cmd_vel) < CMD_VEL_THRE:
+            rospy.loginfo("Navigation: reach the navigation goal.")
+            self.reach_goal_state = True
+            self.current_goal = None
+
+    def cmd_vel_callback(self,msg):
+        self.cmd_vel = np.array([msg.linear.x, msg.linear.y, msg.angular.z])
+
+    def grasp(self):
+        rospy.wait_for_service('grasp_')
+        try:
+            self.grasp_cli = rospy.ServiceProxy('grasp_', grasp_place)
+            resp1 = cli('grasp',0)
+            return resp1.success
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
 
     # def cube1_pose_callback(self,msg):
     #     if not self.tf_buffer.can_transform("world","camera_aligned_depth_to_color_frame_correct",rospy.Time.now()):
@@ -220,14 +264,27 @@ class Brain(object):
 
 
 def main():
+    time.sleep(1)
     rospy.init_node('brain')
     brain = Brain()
     time.sleep(0.5)
-    brain.publish_nav_goal()
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
+
+    rate = rospy.Rate(10)
+    while not rospy.is_shutdown():
+        if brain.state == 'initial':
+            brain.publish_nav_goal()
+            brain.state = 'going_to_cube1'
+
+        if brain.state == 'going_to_cube1':
+            if brain.reach_goal_state==True and brain.current_goal==None:
+                brain.state = 'reached_cube1'
+
+        if brain.state =='reached_cube1':
+            ret = brain.grasp()
+            if ret == True:
+                brain.state = "get_cube1"
+
+        rate.sleep()
 
 if __name__ == "__main__":   
     main()

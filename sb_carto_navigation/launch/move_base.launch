@@ -1,6 +1,6 @@
 <launch>
   <!-- Arguments -->
-  <arg name="method" default="dwa" doc="method type [teb, eband, dwa]"/>
+  <arg name="method" default="teb" doc="method type [teb, eband, dwa]"/>
   <arg name="cmd_vel_topic" default="/cmd_vel" />
   <arg name="odom_topic" default="/ep/odom" />
 

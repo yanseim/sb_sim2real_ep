@@ -16,6 +16,7 @@ TebLocalPlannerROS:
  exact_arc_length: False
     
  # Robot
+ 
  max_vel_x: 0.5
  max_vel_x_backwards: 0.5
  max_vel_y: 0.5 # for omnidirection

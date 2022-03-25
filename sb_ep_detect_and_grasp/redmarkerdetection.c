@@ -5269,7 +5269,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
  *     hsvImg = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
  *     grayImg = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)             # <<<<<<<<<<<<<<
  * 
- *     match_threshold = 100000
+ *     match_threshold = 140000
  */
   __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_cv2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 125, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
@@ -5334,14 +5334,14 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
   /* "redmarkerdetection.pyx":127
  *     grayImg = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
  * 
- *     match_threshold = 100000             # <<<<<<<<<<<<<<
+ *     match_threshold = 140000             # <<<<<<<<<<<<<<
  * 
  *     red_segmentation(grayImg,hsvImg,seg_papram)
  */
-  __pyx_v_match_threshold = 0x186A0;
+  __pyx_v_match_threshold = 0x222E0;
 
   /* "redmarkerdetection.pyx":129
- *     match_threshold = 100000
+ *     match_threshold = 140000
  * 
  *     red_segmentation(grayImg,hsvImg,seg_papram)             # <<<<<<<<<<<<<<
  * 
@@ -7721,7 +7721,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
  * 
  *     # print("quads_prj_draw",quads_prj_draw)
  *     for i in range(len(quads_ID)):             # <<<<<<<<<<<<<<
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \
  */
   __pyx_t_11 = PyList_GET_SIZE(__pyx_v_quads_ID); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 295, __pyx_L1_error)
@@ -7732,7 +7732,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
     /* "redmarkerdetection.pyx":296
  *     # print("quads_prj_draw",quads_prj_draw)
  *     for i in range(len(quads_ID)):
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:             # <<<<<<<<<<<<<<
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:             # <<<<<<<<<<<<<<
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \
  *                 tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
  */
@@ -7774,7 +7774,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
     }
     __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_quads_ID, __pyx_v_i, Py_ssize_t, 1, PyInt_FromSsize_t, 1, 1, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 296, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_t_2, __pyx_int_6, 6, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_EqObjC(__pyx_t_2, __pyx_int_3, 3, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_19 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_19 < 0)) __PYX_ERR(0, 296, __pyx_L1_error)
@@ -7786,7 +7786,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
     }
     __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_quads_ID, __pyx_v_i, Py_ssize_t, 1, PyInt_FromSsize_t, 1, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyInt_EqObjC(__pyx_t_1, __pyx_int_7, 7, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 296, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyInt_EqObjC(__pyx_t_1, __pyx_int_4, 4, 0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 296, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_19 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_19 < 0)) __PYX_ERR(0, 296, __pyx_L1_error)
@@ -7797,7 +7797,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
 
       /* "redmarkerdetection.pyx":297
  *     for i in range(len(quads_ID)):
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \             # <<<<<<<<<<<<<<
  *                 tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
  *                 tvec_list[i][2] < 1.5:
@@ -7832,7 +7832,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
       }
 
       /* "redmarkerdetection.pyx":298
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \
  *                 tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \             # <<<<<<<<<<<<<<
  *                 tvec_list[i][2] < 1.5:
@@ -7900,7 +7900,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
 
       /* "redmarkerdetection.pyx":297
  *     for i in range(len(quads_ID)):
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \             # <<<<<<<<<<<<<<
  *                 tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
  *                 tvec_list[i][2] < 1.5:
@@ -8145,7 +8145,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
 
         /* "redmarkerdetection.pyx":297
  *     for i in range(len(quads_ID)):
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \             # <<<<<<<<<<<<<<
  *                 tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
  *                 tvec_list[i][2] < 1.5:
@@ -8155,7 +8155,7 @@ static PyObject *__pyx_pf_18redmarkerdetection_14marker_detection(CYTHON_UNUSED 
       /* "redmarkerdetection.pyx":296
  *     # print("quads_prj_draw",quads_prj_draw)
  *     for i in range(len(quads_ID)):
- *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7:             # <<<<<<<<<<<<<<
+ *         if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:             # <<<<<<<<<<<<<<
  *             if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \
  *                 tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
  */

@@ -15,6 +15,7 @@ import tf2_geometry_msgs
 import time
 import roslib
 import sys
+import actionlib_msgs
 
 from sb_ep_detect_and_grasp.srv import grasp_place
 from sb_ep_detect_and_grasp.msg import markers
@@ -34,9 +35,9 @@ cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.001308646
                   [2.3251845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
                   [2.4501845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
                   [2.5751845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
-                  [2.57,0,3.2,0,0,0,-1]]
+                  [2.57,0,3.15,0,0,0,-1]]
 
-
+via_positions = [[3.599114990234375, 0.09183745086193085, 1.8005446195602417,0,0,0,-1]]
 
 EXCHANGE_POSE = [1.6803152561187744, 1.7498154163360597, 0.08210877216420992, 0, 0, 0, 1]
 EXCHANGE_SEE_RELA_GOALS = [-1.5, -0.3, 0]
@@ -68,8 +69,11 @@ class Brain(object):
 
         # calculate all 8 key positions in map pose
         self.key_position_in_map_pose = []
+        self.via_position_in_map_pose = []
         for i in range(len(cube_positions)):
             self.key_position_in_map_pose.append(self.calculate_pose_in_map_frame(cube_positions[i]))
+        for i in range(len(via_positions)):
+            self.via_position_in_map_pose.append(self.calculate_pose_in_map_frame(via_positions[i]))
 
         self.goal_reached_check = False
         self.current_goal = None
@@ -79,6 +83,7 @@ class Brain(object):
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback)
         rospy.Subscriber('/ep/odom', Odometry, self.keyLocCheck)
         rospy.Subscriber('/see_aruco_pose', markers, self.see_callback)
+        self.cancle_publisher =  rospy.Publisher("/move_base/cancel",actionlib_msgs.msg.GoalID)
         # rospy.Subscriber
 
         rospy.wait_for_service('place_')
@@ -137,7 +142,7 @@ class Brain(object):
         goal.header.frame_id = "map"
         goal.pose = goal_pose
         self.nav_goal_publisher.publish(goal)
-        rospy.loginfo("i have published cube goal---------------")
+        rospy.loginfo("i have published a goal---------------")
         # rospy.loginfo(goal_map)
         self.current_goal = goal.pose
 
@@ -231,6 +236,15 @@ class Brain(object):
 
         self.nav_goal_pub(goal_map)
 
+    def pub_via_point_nav(self):
+        goal_map = copy.copy(self.via_position_in_map_pose[0])
+        quat = R.from_euler('z', np.pi).as_quat()
+        goal_map.orientation.x = quat[0]
+        goal_map.orientation.y = quat[1]
+        goal_map.orientation.z = quat[2]
+        goal_map.orientation.w = quat[3]
+        self.nav_goal_pub(goal_map)
+
     def keyLocCheck(self, msg):
         if self.current_goal==None:
             return 
@@ -263,7 +277,7 @@ class Brain(object):
             resp1 = self.grasp_cli ('grasp', 0)
             return resp1.success
         except rospy.ServiceException as e:
-            print("Service call failed: %s" % e)
+            print("Service grasp call failed: %s" % e)
 
     def place(self,idx):
         rospy.wait_for_service('place_')
@@ -272,11 +286,11 @@ class Brain(object):
             resp1 = self.place_cli('place', idx)
             return resp1.success
         except rospy.ServiceException as e:
-            print("Service call failed: %s" % e)
+            print("Service place call failed: %s" % e)
 
     def see_callback(self,msg):
         self.cubes_to_grasp = msg.detected_ids
-        rospy.loginfo("the cubes i detected are %d,%d,%d"%(self.cubes_to_grasp[0],self.cubes_to_grasp[1],self.cubes_to_grasp[2]))
+        rospy.loginfo("the cubes i detected are %d,%d,%d"%(self.cubes_to_grasp[0]+1,self.cubes_to_grasp[1]+1,self.cubes_to_grasp[2]+1))
 
     # def cube1_pose_callback(self,msg):
     #     if not self.tf_buffer.can_transform("world","camera_aligned_depth_to_color_frame_correct",rospy.Time.now()):
@@ -376,12 +390,15 @@ def main():
 
         if brain.state == 'going_to_see':
             if brain.cubes_to_grasp != None and np.linalg.norm(brain.cmd_vel) < CMD_VEL_THRE:
-                brain.publish_nav_goal(brain.cubes_to_grasp[0]+1,0,'get')
+                brain.publish_nav_goal(brain.cubes_to_grasp[exc_idx-1]+1,0,'get')
+                rospy.loginfo("going to get the 1st cube!!")
                 brain.state = 'navigation'
 
         if brain.state == 'navigation':
-            if brain.reach_goal_state == True and brain.current_goal == None:
-                # detect the marker should execute here
+            if brain.reach_goal_state == True and brain.current_goal == None and np.linalg.norm(brain.cmd_vel) < CMD_VEL_THRE:
+                rospy.loginfo("i ve reached the goal cube!!")
+                goal = actionlib_msgs.msg.GoalID()
+                brain.cancle_publisher.publish(goal)
                 if gotten_cube == True:
                     brain.state = 'place_cube'
                 else:
@@ -390,17 +407,25 @@ def main():
                 brain.reach_goal_state == False # reset flag and navigation is finished
 
         if brain.state == 'grasp_cube':
+            rospy.loginfo("going to grasp the cube!!")
             ret = brain.grasp()
-            ret = True
+
             if ret == True:
                 gotten_cube = True
-
+                # if brain.cubes_to_grasp[exc_idx-1]==3:# if get 4
+                #     brain.state = 'move_to_via_point_between_4'
+                # else:
+                #     brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
+                #     brain.state = "navigation"
                 brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
                 brain.state = "navigation"
 
+        # if brain.state == 'move_to_via_point_between_4':
+        #     brain.pub_via_point_nav()
+
         if brain.state == 'place_cube':
             place_success = brain.place(exc_idx-1)
-            place_success = True
+
             if place_success == True:
                 gotten_cube = False
 
@@ -411,7 +436,7 @@ def main():
                     # if detection is needed to set cube_idx in publish_nav_goal()
                     # brain.detectlist2goal()
                     # here exc_idx == cube_idx i.e. getting cube 123 sequentially
-                    brain.publish_nav_goal(exc_idx, 0, 'get')
+                    brain.publish_nav_goal(brain.cubes_to_grasp[exc_idx-1]+1, 0, 'get')
                     brain.state = 'navigation'
 
         rate.sleep()

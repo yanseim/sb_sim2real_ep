@@ -18,7 +18,7 @@ import tf2_geometry_msgs
 import roslib
 import sys
 
-from sb_ep_detect_and_grasp.srv import grasp_place
+from sb_ep_detect_and_grasp.srv import grasp_place,grasp_placeRequest,grasp_placeResponse
 
 from scipy.spatial.transform import Rotation as R
 
@@ -90,14 +90,14 @@ class graspAruco:
         self.arm_position_pub.publish(reset_arm_msg)   
 
     def forward_zero(self):
-        vel_cmd = Twist()
-        vel_cmd.linear.x = 0.0
-        vel_cmd.linear.y = 0.0
-        vel_cmd.linear.z = 0.0
-        vel_cmd.angular.x = 0.0
-        vel_cmd.angular.y = 0.0
-        vel_cmd.angular.z = 0.0
-        self.base_move_vel_pub.publish(vel_cmd)
+        zero_cmd = Twist()
+        zero_cmd.linear.x = 0.0
+        zero_cmd.linear.y = 0.0
+        zero_cmd.linear.z = 0.0
+        zero_cmd.angular.x = 0.0
+        zero_cmd.angular.y = 0.0
+        zero_cmd.angular.z = 0.0
+        self.base_move_vel_pub.publish(zero_cmd)
         rospy.sleep(0.05)
 
     def move_base_x(self, x_move):
@@ -146,8 +146,8 @@ class graspAruco:
         if pos_2_base.all()==None:
             return None
 
-        print("pos_2_base",pos_2_base)
-        print("angle_2_base",angle_2_base)
+        # print("pos_2_base",pos_2_base)
+        # print("angle_2_base",angle_2_base)
         # desired_ang = 
 
         distance_in_x = pos_2_base[0]-desired_pos[0]
@@ -173,34 +173,40 @@ class graspAruco:
         gama_y = 0.01
         gama_w = 10*math.pi/180
         while not self.grasp_success:
+            # print("in the loop")
             distance_in_x = self.pos_2_base[0]-target_pos[0]
             distance_in_y = self.pos_2_base[1]-target_pos[1]
             distance_in_ang = self.angle_2_base-target_ang
             if (abs(distance_in_x) <= gama_x) and (abs(distance_in_y) <= gama_y) and \
                 (abs(distance_in_ang)<gama_w) and self.grasp_success==False:
                 self.forward_zero()
+                rospy.sleep(0.1)
                 print("===== start to grasp ====")
                 self.move_arm()
                 rospy.sleep(1)
                 self.close_gripper()
-                rospy.sleep(1)
+                # self.forward_zero()
+                rospy.sleep(0.2)
                 self.reset_arm()
-                rospy.sleep(1)
+                # rospy.sleep(1)
+                # self.forward_zero()
                 print("===== finish graspping ====")
 
                 self.grasp_success = True
-                self.move_base_x(-0.1)
+                
             else:
-                self.controller(self.pos_2_base,self.angle_2_base,target_pos)
+                control_input = self.controller(self.pos_2_base,self.angle_2_base,target_pos)
                 vel_cmd_pub = Twist()
-                vel_cmd_pub.linear.x = self.vel_cmd[0]
-                vel_cmd_pub.linear.y = self.vel_cmd[1]
+                vel_cmd_pub.linear.x = control_input[0]
+                vel_cmd_pub.linear.y = control_input[1]
                 vel_cmd_pub.linear.z = 0.0
                 vel_cmd_pub.angular.x = 0.0
                 vel_cmd_pub.angular.y = 0.0
-                vel_cmd_pub.angular.z = self.vel_cmd[2]
+                vel_cmd_pub.angular.z = control_input[2]
                 self.base_move_vel_pub.publish(vel_cmd_pub)
+        # self.move_base_x(-0.1)
         self.grasp_success=False
+        # rospy.sleep(10)
         return True
 
 

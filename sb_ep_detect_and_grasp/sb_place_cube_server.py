@@ -103,7 +103,7 @@ class placeAruco:
 
     def place_ore(self,num):
         rate = rospy.Rate(self.ros_rate)
-        target_pos = [0.21,0,0]
+        target_pos = [0.25,0,0]
         target_ang=0
         gama_x = 0.01
         gama_y = 0.01

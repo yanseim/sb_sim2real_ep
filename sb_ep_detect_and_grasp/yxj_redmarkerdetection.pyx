@@ -124,7 +124,7 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
     hsvImg = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     grayImg = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    match_threshold = 140000
+    match_threshold = 100000
 
     red_segmentation(grayImg,hsvImg,seg_papram)
 
@@ -269,63 +269,7 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
             quads_ID.append(-1) # bcz this line,quads_ID has the same length with quads_prj!! however quads_prj_draw does not
             quads_prj_draw_4_showing_target.append(quads_prj[i])# quads_prj_draw_4_showing_target has the same length with quads_prj
             
-        
-        # if min_diff_target==4:
-        #     cv2.imshow('tem0', templates[min_diff_target])
-        #     cv2.imshow('tem3', templates[2])
-        #     cv2.imshow('match candidate', out_img)
-        #     cv2.waitKey(1)
-    
-    # print("quads_ID",quads_ID)
-# ===============================================================
 
-    # choose which plane to publish
-    idx_chosen_to_pub = -1
-
-    # min_y = 1
-    # for i in range(len(quads_ID)):
-    #     if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 6  or quads_ID[i] == 7 and tvec_list[i][1]>-0.2:
-    #         if min_y>tvec_list[i][1]:
-    #             min_y = tvec_list[i][1]
-    # print("min_y",min_y)
-
-    min_norm = 10
-    
-    # print("quads_prj_draw",quads_prj_draw)
-    for i in range(len(quads_ID)):
-        if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
-            if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \
-                tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
-                tvec_list[i][2] < 1.5:
-                i_norm = np.linalg.norm( R.from_rotvec(np.reshape(rvec_list[i],(3,))).as_matrix()-np.array([[0,1,0],[1,0,0],[0,0,-1]]) )
-                # print("in loop",R.from_rotvec(np.reshape(rvec_list[i],(3,))).as_matrix())
-                if min_norm > i_norm:
-                    min_norm = i_norm
-                    idx_chosen_to_pub = i
-    # print("R.from_rotvec(np.reshape(rvec_list[i],(3,))).as_matrix()",R.from_rotvec(np.reshape(rvec_list[idx_chosen_to_pub],(3,))).as_matrix())
-
-
-    # norm_epsilon = 2
-    # while len(id_list_chosen)>1:
-    #     for i in range(len(id_list_chosen)):
-    #         rot = R.from_rotvec(np.reshape(rvec_list_chosen[i],(3,)))
-    #         R1 = rot.as_matrix()
-    #         Ry1 = np.array([[0,0,-1],[0,1,0],[1,0,0]])
-    #         Ry2 = np.array([[0,0,1],[0,1,0],[-1,0,0]])
-    #         for k in range(len(id_list_chosen)):
-    #             min_norm = 10
-    #             if i != k:
-    #                 R2 = R.from_rotvec(np.reshape(rvec_list_chosen[k],(3,))).as_matrix()
-    #                 if min_norm > min(np.linalg.norm(Ry1@R1-R2),np.linalg.norm(Ry2@R1-R2)):
-    #                     min_norm = min(np.linalg.norm(Ry1@R1-R2),np.linalg.norm(Ry2@R1-R2))
-    #                     k_min = k
-    #         print("min_norm",min_norm)
-    #         if min_norm<norm_epsilon:
-    #             delete_one = i if np.linalg.norm(R1-np.eye(3))>np.linalg.norm(R.from_rotvec(np.reshape(rvec_list_chosen[k],(3,))).as_matrix()-np.eye(3)) else k
-    #             del id_list_chosen[delete_one]
-    #             del tvec_list_chosen[delete_one]
-    #             del rvec_list_chosen[delete_one]
-    #             break
 
 
     for i in range(len(quads_prj)):
@@ -351,4 +295,23 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
     if idx_chosen_to_pub != -1:
         cv2.drawContours(frame,quads_prj_draw_4_showing_target[idx_chosen_to_pub],-1,(255,0,0),3)
     
-    return quads_ID,tvec_list,rvec_list,idx_chosen_to_pub
+    return quads_ID,tvec_list,rvec_list
+
+
+def choose_one_to_publish(quads_ID,tvec_list,rvec_list):
+        # choose which plane to publish
+    idx_chosen_to_pub = -1
+
+    min_norm = 10
+    
+    # print("quads_prj_draw",quads_prj_draw)
+    for i in range(len(quads_ID)):
+        if quads_ID[i] == 0 or quads_ID[i] == 1 or quads_ID[i] == 2 or quads_ID[i] == 3  or quads_ID[i] == 4:
+            if tvec_list[i][0] < 0.5 and tvec_list[i][0] > -0.5 and \
+                tvec_list[i][1] < 0.03 and tvec_list[i][1] > -0.15 and tvec_list[i][1] and \
+                tvec_list[i][2] < 1.5:
+                i_norm = np.linalg.norm( R.from_rotvec(np.reshape(rvec_list[i],(3,))).as_matrix()-np.array([[0,1,0],[1,0,0],[0,0,-1]]) )
+                # print("in loop",R.from_rotvec(np.reshape(rvec_list[i],(3,))).as_matrix())
+                if min_norm > i_norm:
+                    min_norm = i_norm
+                    idx_chosen_to_pub = i

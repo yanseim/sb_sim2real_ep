@@ -106,7 +106,7 @@ class arucoPose:
                     self.see_count+=1
                 else:
                     self.see_aruco_pose_pub.publish(sorted_see_marker_msg)
-                    rospy.loginfo("I have seen 3 numbers: %d,%d,%d!!!" %(sorted_see_marker_msg.detected_ids[0],sorted_see_marker_msg.detected_ids[1],sorted_see_marker_msg.detected_ids[2]))
+                    rospy.loginfo("I have seen 3 numbers: %d,%d,%d!!!" %(sorted_see_marker_msg.detected_ids[0]+1,sorted_see_marker_msg.detected_ids[1]+1,sorted_see_marker_msg.detected_ids[2]+1))
                     self.see_markers=True
 
         if idx_chosen_to_pub==-1:

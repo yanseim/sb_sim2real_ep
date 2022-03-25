@@ -101,7 +101,7 @@ class arucoPose:
         sorted_see_marker_msg.detected_poses = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_poses))]
 
         if len(sorted_see_marker_msg.detected_ids)==3 and self.see_markers == False:
-            if self.see_count<100:
+            if self.see_count<10:
                 self.see_count+=1
             else:
                 self.see_aruco_pose_pub.publish(sorted_see_marker_msg)
@@ -117,7 +117,7 @@ class arucoPose:
                     if aruco_pose_msg.position.y < 0.02 and aruco_pose_msg.position.y > field_top:
                         self.aruco_pose_pub.publish(aruco_pose_msg)
                         target_detected = True
-                        print("id : ",id_list[i]," : ",aruco_pose_msg)
+                        # print("id : ",id_list[i]," : ",aruco_pose_msg)
 
                 if id_list[i] == 3 and sink1_detected == False:
                     if aruco_pose_msg.position.y > field_top :
@@ -151,7 +151,7 @@ class arucoPose:
                 aruco_pose_msg = pose_aruco_2_ros(rvec_list[idx_chosen_to_pub],tvec_list[idx_chosen_to_pub])
                 self.aruco_pose_pub.publish(aruco_pose_msg)
                 target_detected = True
-                print("id : ",id_list[idx_chosen_to_pub]," : ",aruco_pose_msg)
+                # print("id : ",id_list[idx_chosen_to_pub]," : ",aruco_pose_msg)
 
 
 def main():

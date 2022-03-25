@@ -3,6 +3,7 @@ import cv2
 from scipy.spatial.transform import Rotation as R
 cimport numpy as np
 cimport cython
+import sys
 
 DTYPE = np.uint8
 ctypedef np.uint8_t DTYPE_t
@@ -100,8 +101,7 @@ def sort_contour(cnt):
 templates = []
 
 def load_template():
-    tpl_path = "./tpl/"
-    print('tpl_path',tpl_path)
+    tpl_path = sys.path[0]+"/tpl/"
     for i in range(8):
         tpl = cv2.imread(tpl_path + str(i) + ".png", 0)
         print(tpl.shape)
@@ -199,20 +199,14 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
         out_img = cv2.threshold(out_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
-        # my_out_img = np.zeros((50,50),dtype="uint8")
-        # my_out_img[7:43,7:43] = out_img[7:43,7:43]
-
-
-        # print("my_out_img",my_out_img)
-        # cv2.imshow("out_img",out_img)
-        if out_img.shape[0]!=50 or out_img.shape[1]!=50:
-            continue
+        my_out_img = np.zeros((50,50),dtype="uint8")
+        my_out_img[7:43,7:43] = out_img[7:43,7:43]
 
         match_candidate = []
-        match_candidate.append(out_img)
-        match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_180))
-        match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_90_CLOCKWISE))
-        match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
+        match_candidate.append(my_out_img)
+        match_candidate.append(cv2.rotate(my_out_img, cv2.ROTATE_180))
+        match_candidate.append(cv2.rotate(my_out_img, cv2.ROTATE_90_CLOCKWISE))
+        match_candidate.append(cv2.rotate(my_out_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
 
         min_diff = 100000000000
         min_diff_target = 0
@@ -220,7 +214,6 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
 
         for t in range(8):
             for tt in range(4):
-                print("atch_candidate[tt].shape",match_candidate[tt].shape)
                 diff_img = cv2.absdiff(templates[t], match_candidate[tt])
                 sum = img_sum(diff_img)
                 if min_diff > sum:

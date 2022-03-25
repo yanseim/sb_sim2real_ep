@@ -78,7 +78,7 @@ class Brain(object):
 
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback)
         rospy.Subscriber('/ep/odom', Odometry, self.keyLocCheck)
-        rospy.Subscriber('/see_aruco_pose', Odometry, self.see_callback)
+        rospy.Subscriber('/see_aruco_pose', markers, self.see_callback)
         # rospy.Subscriber
 
         rospy.wait_for_service('place_')
@@ -186,7 +186,6 @@ class Brain(object):
                 goal_map.orientation.y = quat[1]
                 goal_map.orientation.z = quat[2]
                 goal_map.orientation.w = quat[3]
-
             if cube_idx == 2:
                 goal_map.position.x += 0.0
                 goal_map.position.y += 0.6
@@ -196,8 +195,23 @@ class Brain(object):
                 goal_map.orientation.y = quat[1]
                 goal_map.orientation.z = quat[2]
                 goal_map.orientation.w = quat[3]
-
             if cube_idx == 3:
+                goal_map.position.x -= 0.6
+                goal_map.position.z = 0.0
+                quat = R.from_euler('z', 0).as_quat()
+                goal_map.orientation.x = quat[0]
+                goal_map.orientation.y = quat[1]
+                goal_map.orientation.z = quat[2]
+                goal_map.orientation.w = quat[3]
+            if cube_idx == 4:
+                goal_map.position.x += 0.6
+                goal_map.position.z = 0.0
+                quat = R.from_euler('z', np.pi).as_quat()
+                goal_map.orientation.x = quat[0]
+                goal_map.orientation.y = quat[1]
+                goal_map.orientation.z = quat[2]
+                goal_map.orientation.w = quat[3]
+            if cube_idx == 5:
                 goal_map.position.x -= 0.6
                 goal_map.position.z = 0.0
                 quat = R.from_euler('z', 0).as_quat()
@@ -246,13 +260,23 @@ class Brain(object):
         rospy.wait_for_service('grasp_')
         try:
             self.grasp_cli = rospy.ServiceProxy('grasp_', grasp_place)
-            resp1 = cli('grasp', 0)
+            resp1 = elf.grasp_cli ('grasp', 0)
+            return resp1.success
+        except rospy.ServiceException as e:
+            print("Service call failed: %s" % e)
+
+    def place(self,idx):
+        rospy.wait_for_service('place_')
+        try:
+            self.place_cli = rospy.ServiceProxy('place_', grasp_place)
+            resp1 = place_cli('place', idx)
             return resp1.success
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
 
     def see_callback(self,msg):
         self.cubes_to_grasp = msg.detected_ids
+        rospy.loginfo("the cubes i detected are %d,%d,%d"%(self.cubes_to_grasp[0],self.cubes_to_grasp[1],self.cubes_to_grasp[2]))
 
     # def cube1_pose_callback(self,msg):
     #     if not self.tf_buffer.can_transform("world","camera_aligned_depth_to_color_frame_correct",rospy.Time.now()):
@@ -366,7 +390,7 @@ def main():
                 brain.reach_goal_state == False # reset flag and navigation is finished
 
         if brain.state == 'grasp_cube':
-            # ret = brain.grasp()
+            ret = brain.grasp()
             ret = True
             if ret == True:
                 gotten_cube = True
@@ -375,7 +399,7 @@ def main():
                 brain.state = "navigation"
 
         if brain.state == 'place_cube':
-            # place_success = brain.place()
+            place_success = brain.place(exc_idx-1)
             place_success = True
             if place_success == True:
                 gotten_cube = False

@@ -5,7 +5,6 @@ import re
 import rospy
 import numpy as np
 
-import math
 import os
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose
@@ -54,10 +53,10 @@ class placeAruco:
         angle_2_base = R.from_quat(quat_2_base).as_euler("YXZ")[0]
         
         def ang_ref(angle):
-            if angle>math.pi/2:
-                angle-=math.pi
-            elif angle<-math.pi/2:
-                angle+=math.pi
+            if angle>np.pi/2:
+                angle-=np.pi
+            elif angle<-np.pi/2:
+                angle+=np.pi
             return angle
         angle_2_base = ang_ref(angle_2_base)   
         return pos_2_base,angle_2_base
@@ -93,7 +92,7 @@ class placeAruco:
 
         vel_cmd[0] = 2*self.e_refine(distance_in_x,0.01)
         vel_cmd[1] = 2*self.e_refine(distance_in_y,0.01)
-        vel_cmd[2] = -3*self.e_refine(distance_in_ang,10*math.pi/180)
+        vel_cmd[2] = -3*self.e_refine(distance_in_ang,10*np.pi/180)
 
         vel_cmd = np.clip(np.abs(vel_cmd),[0.11,0.11,0.01],[0.5,0.5,0.5])*np.sign(vel_cmd)
 
@@ -108,7 +107,7 @@ class placeAruco:
         target_ang=0
         gama_x = 0.01
         gama_y = 0.01
-        gama_w = 10*math.pi/180
+        gama_w = 10*np.pi/180
         while not self.place_success:
             distance_in_x = self.sink_pos_2_base[num][0]-target_pos[0]
             distance_in_y = self.sink_pos_2_base[num][1]-target_pos[1]

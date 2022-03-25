@@ -124,7 +124,7 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
     hsvImg = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     grayImg = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    match_threshold = 150000
+    match_threshold = 100000
 
     red_segmentation(grayImg,hsvImg,seg_papram)
 
@@ -199,14 +199,39 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
         out_img = cv2.threshold(out_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
-        my_out_img = np.zeros((50,50),dtype="uint8")
-        my_out_img[7:43,7:43] = out_img[7:43,7:43]
+        # my_out_img = np.zeros((50,50),dtype="uint8")
+        # my_out_img[7:43,7:43] = out_img[7:43,7:43]
+
+        #===============================================lkc
+        # original_img = cv2.threshold(out_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+
+        # out_img = np.zeros((50, 50)).astype(np.uint8)
+        # out_img[3:47, 3:47] = original_img[3:47, 3:47]
+        # num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(out_img)
+        # for label_i in range(1, num_labels):                
+        #     if stats[label_i, cv2.CC_STAT_AREA].astype(float) < 50:
+        #         out_img[labels==label_i] = 0
+
+        # if np.nonzero(out_img)[0].shape[0] > 2500*0.65 or np.nonzero(out_img)[0].shape[0] == 0:
+        #     continue
+
+        # nonzero_img = np.nonzero(out_img)
+
+        # left, right = np.min(nonzero_img[0]), np.max(nonzero_img[0])
+        # top, bottom = np.min(nonzero_img[1]), np.max(nonzero_img[1])
+        # right, bottom = min(right+1, 49), min(bottom+1, 49)
+        # nonzero_img = out_img[left:right, top:bottom]
+        # nonzero_img = cv2.resize(nonzero_img, (36, 36), cv2.INTER_NEAREST)
+        # out_img = np.zeros((50,50),dtype="uint8")
+        # out_img[7:7+36, 7:7+36] = nonzero_img
+        #===============================================lkc
+        
 
         match_candidate = []
-        match_candidate.append(my_out_img)
-        match_candidate.append(cv2.rotate(my_out_img, cv2.ROTATE_180))
-        match_candidate.append(cv2.rotate(my_out_img, cv2.ROTATE_90_CLOCKWISE))
-        match_candidate.append(cv2.rotate(my_out_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
+        match_candidate.append(out_img)
+        match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_180))
+        match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_90_CLOCKWISE))
+        match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_90_COUNTERCLOCKWISE))
 
         min_diff = 100000000000
         min_diff_target = 0
@@ -214,15 +239,14 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
 
         for t in range(8):
             for tt in range(4):
+                # print('match_candidate[tt].shape',match_candidate[tt])
+                # print('templates[t].shape',templates[t])
+                
                 diff_img = cv2.absdiff(templates[t], match_candidate[tt])
                 sum = img_sum(diff_img)
                 if min_diff > sum:
                     min_diff = sum
                     min_diff_target = t
-                # if t in [2,4]:
-                #     print("t = %d"%t)
-                #     print("min_diff",min_diff)
-                #     print("sum",sum)
 
         # for avoiding misdetecting 3 to O=================
         if min_diff_target==6:

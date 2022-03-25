@@ -81,53 +81,54 @@ class arucoPose:
         sink3_detected = False
         field_top = -0.15
 
-        marker_msg = markers()# marker_msg only has detected members
-        for i in range(len(id_list)):
-            aruco_pose_msg = pose_aruco_2_ros(rvec_list[i],tvec_list[i])
-            if id_list[i] in [0,1,2,3,4,5,6,7]:
-                marker_msg.detected_ids.append(id_list[i])
-                marker_msg.detected_poses.append(aruco_pose_msg)
-     
-        see_marker_msg = markers()# marker_msg only has high markers we want to see
-        x_list = []
-        for i in range(len(marker_msg.detected_ids)):
-            if marker_msg.detected_poses[i].position.y<-0.2 and marker_msg.detected_ids[i] in [0,1,2,3,4]:
-                see_marker_msg.detected_ids.append(marker_msg.detected_ids[i])
-                see_marker_msg.detected_poses.append(marker_msg.detected_poses[i])
-                x_list.append(marker_msg.detected_poses[i].position.x)
+        if self.see_markers==False:
+            marker_msg = markers()# marker_msg only has detected members
+            for i in range(len(id_list)):
+                aruco_pose_msg = pose_aruco_2_ros(rvec_list[i],tvec_list[i])
+                if id_list[i] in [0,1,2,3,4,5,6,7]:
+                    marker_msg.detected_ids.append(id_list[i])
+                    marker_msg.detected_poses.append(aruco_pose_msg)
+        
+            see_marker_msg = markers()# marker_msg only has high markers we want to see
+            x_list = []
+            for i in range(len(marker_msg.detected_ids)):
+                if marker_msg.detected_poses[i].position.y<-0.2 and marker_msg.detected_ids[i] in [0,1,2,3,4]:
+                    see_marker_msg.detected_ids.append(marker_msg.detected_ids[i])
+                    see_marker_msg.detected_poses.append(marker_msg.detected_poses[i])
+                    x_list.append(marker_msg.detected_poses[i].position.x)
 
-        sorted_see_marker_msg = markers()
-        sorted_see_marker_msg.detected_ids = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_ids))]
-        sorted_see_marker_msg.detected_poses = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_poses))]
+            sorted_see_marker_msg = markers()
+            sorted_see_marker_msg.detected_ids = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_ids))]
+            sorted_see_marker_msg.detected_poses = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_poses))]
 
-        if len(sorted_see_marker_msg.detected_ids)==3 and self.see_markers == False:
-            if self.see_count<10:
-                self.see_count+=1
-            else:
-                self.see_aruco_pose_pub.publish(sorted_see_marker_msg)
-                rospy.loginfo("I have seen 3 numbers: %d,%d,%d!!!" %(sorted_see_marker_msg.detected_ids[0],sorted_see_marker_msg.detected_ids[1],sorted_see_marker_msg.detected_ids[2]))
-                self.see_markers=True
+            if len(sorted_see_marker_msg.detected_ids)==3 and self.see_markers == False:
+                if self.see_count<10:
+                    self.see_count+=1
+                else:
+                    self.see_aruco_pose_pub.publish(sorted_see_marker_msg)
+                    rospy.loginfo("I have seen 3 numbers: %d,%d,%d!!!" %(sorted_see_marker_msg.detected_ids[0],sorted_see_marker_msg.detected_ids[1],sorted_see_marker_msg.detected_ids[2]))
+                    self.see_markers=True
 
         if idx_chosen_to_pub==-1:
             for i in range(len(id_list)):
                 aruco_pose_msg = pose_aruco_2_ros(rvec_list[i],tvec_list[i])
 
-                if id_list[i] == 0 or id_list[i] == 1 or id_list[i] == 2 or id_list[i] == 6  or id_list[i] == 7 and target_detected == False:
+                if id_list[i] == 0 or id_list[i] == 1 or id_list[i] == 2 or id_list[i] == 3  or id_list[i] == 4 and target_detected == False:
                     # choose cube to publish
                     if aruco_pose_msg.position.y < 0.02 and aruco_pose_msg.position.y > field_top:
                         self.aruco_pose_pub.publish(aruco_pose_msg)
                         target_detected = True
                         # print("id : ",id_list[i]," : ",aruco_pose_msg)
 
-                if id_list[i] == 3 and sink1_detected == False:
+                if id_list[i] == 5 and sink1_detected == False:
                     if aruco_pose_msg.position.y > field_top :
                         self.aruco_sink1_pub.publish(aruco_pose_msg)
                         sink1_detected = True
-                if id_list[i] == 4 and sink2_detected == False:
+                if id_list[i] == 6 and sink2_detected == False:
                     if aruco_pose_msg.position.y > field_top :
                         self.aruco_sink2_pub.publish(aruco_pose_msg)
                         sink2_detected = True
-                if id_list[i] == 5 and sink3_detected == False:
+                if id_list[i] == 7 and sink3_detected == False:
                     if aruco_pose_msg.position.y > field_top :
                         self.aruco_sink3_pub.publish(aruco_pose_msg)
                         sink3_detected = True
@@ -135,15 +136,15 @@ class arucoPose:
             for i in range(len(id_list)):
                 aruco_pose_msg = pose_aruco_2_ros(rvec_list[i],tvec_list[i])
 
-                if id_list[i] == 3 and sink1_detected == False:
+                if id_list[i] == 5 and sink1_detected == False:
                     if aruco_pose_msg.position.y > field_top :
                         self.aruco_sink1_pub.publish(aruco_pose_msg)
                         sink1_detected = True
-                if id_list[i] == 4 and sink2_detected == False:
+                if id_list[i] == 6 and sink2_detected == False:
                     if aruco_pose_msg.position.y > field_top :
                         self.aruco_sink2_pub.publish(aruco_pose_msg)
                         sink2_detected = True
-                if id_list[i] == 5 and sink3_detected == False:
+                if id_list[i] == 7 and sink3_detected == False:
                     if aruco_pose_msg.position.y > field_top :
                         self.aruco_sink3_pub.publish(aruco_pose_msg)
                         sink3_detected = True

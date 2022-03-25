@@ -260,7 +260,7 @@ class Brain(object):
         rospy.wait_for_service('grasp_')
         try:
             self.grasp_cli = rospy.ServiceProxy('grasp_', grasp_place)
-            resp1 = elf.grasp_cli ('grasp', 0)
+            resp1 = self.grasp_cli ('grasp', 0)
             return resp1.success
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
@@ -269,7 +269,7 @@ class Brain(object):
         rospy.wait_for_service('place_')
         try:
             self.place_cli = rospy.ServiceProxy('place_', grasp_place)
-            resp1 = place_cli('place', idx)
+            resp1 = self.place_cli('place', idx)
             return resp1.success
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)

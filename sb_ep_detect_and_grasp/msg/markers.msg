@@ -1,2 +1,2 @@
-int8[] marker_ids
-geometry_msgs/Pose[] marker_poses
+int8[] detected_ids
+geometry_msgs/Pose[] detected_poses

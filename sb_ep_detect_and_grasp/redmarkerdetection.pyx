@@ -101,9 +101,10 @@ templates = []
 
 def load_template():
     tpl_path = "./tpl/"
+    print('tpl_path',tpl_path)
     for i in range(8):
         tpl = cv2.imread(tpl_path + str(i) + ".png", 0)
-        # print(tpl.shape)
+        print(tpl.shape)
         templates.append(tpl)
 
 def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=1] seg_papram):
@@ -159,7 +160,7 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
             err += np.linalg.norm(projectedPoints[t]-model_image[t])
 
         area = cv2.contourArea(quads[i])
-        if err/area < 0.005:
+        if err/area < 0.005 and tvec[2]<1.55:
             quads_prj.append(projectedPoints.astype(int))
             rvec_list.append(rvec)
             tvec_list.append(tvec)
@@ -198,6 +199,15 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
         out_img = cv2.cvtColor(out_img, cv2.COLOR_BGR2GRAY)
         out_img = cv2.threshold(out_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
+        # my_out_img = np.zeros((50,50),dtype="uint8")
+        # my_out_img[7:43,7:43] = out_img[7:43,7:43]
+
+
+        # print("my_out_img",my_out_img)
+        # cv2.imshow("out_img",out_img)
+        if out_img.shape[0]!=50 or out_img.shape[1]!=50:
+            continue
+
         match_candidate = []
         match_candidate.append(out_img)
         match_candidate.append(cv2.rotate(out_img, cv2.ROTATE_180))
@@ -207,16 +217,22 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
         min_diff = 100000000000
         min_diff_target = 0
 
+
         for t in range(8):
             for tt in range(4):
+                print("atch_candidate[tt].shape",match_candidate[tt].shape)
                 diff_img = cv2.absdiff(templates[t], match_candidate[tt])
                 sum = img_sum(diff_img)
                 if min_diff > sum:
                     min_diff = sum
                     min_diff_target = t
+                # if t in [2,4]:
+                #     print("t = %d"%t)
+                #     print("min_diff",min_diff)
+                #     print("sum",sum)
 
         # for avoiding misdetecting 3 to O=================
-        if min_diff_target==4:
+        if min_diff_target==6:
             sum = 0
             center_start = 21
             center_end = 28
@@ -225,6 +241,7 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
                 sum += img_sum(img_center)
             if sum>(center_end-center_start)*(center_end-center_start)*0.6*255:
                 min_diff_target = 2
+        
         # =================================================
 
         if min_diff < match_threshold:
@@ -303,15 +320,15 @@ def marker_detection(np.ndarray[DTYPE_t, ndim=3] frame,np.ndarray[DTYPE_t, ndim=
         elif quads_ID[i] == 2:
             cv2.putText(frame, '3', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
         elif quads_ID[i] == 3:
-            cv2.putText(frame, 'B', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-        elif quads_ID[i] == 4:
-            cv2.putText(frame, 'O', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-        elif quads_ID[i] == 5:
-            cv2.putText(frame, 'X', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-        elif quads_ID[i] == 6:
             cv2.putText(frame, '4', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
-        elif quads_ID[i] == 7:
+        elif quads_ID[i] == 4:
             cv2.putText(frame, '5', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+        elif quads_ID[i] == 5:
+            cv2.putText(frame, 'B', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+        elif quads_ID[i] == 6:
+            cv2.putText(frame, 'O', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+        elif quads_ID[i] == 7:
+            cv2.putText(frame, 'X', (bbox[0], bbox[1]), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
 
     cv2.drawContours(frame,quads_prj_draw,-1,(0,255,0),1)
     if idx_chosen_to_pub != -1:

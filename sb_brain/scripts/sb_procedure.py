@@ -17,10 +17,10 @@ import roslib
 import sys
 
 from sb_ep_detect_and_grasp.srv import grasp_place
-
+from sb_ep_detect_and_grasp.msg import markers
 from scipy.spatial.transform import Rotation as R
 
-# cube1~5 and target1~3 in world frame
+# cube1~5 and target1~3 and see_position in world frame
 cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.0013086464023217559, -0.0012807715684175491,
                    0.9999980330467224],
                   [1.90030038356781, 0.08630374819040298, 3.099881172180176, -0.0009147212258540094,
@@ -33,7 +33,8 @@ cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.001308646
                    0.0008184657199308276, 0.0041693891398608685, 0.999989926815033],
                   [2.3251845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
                   [2.4501845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
-                  [2.5751845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1]]
+                  [2.5751845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
+                  [2.57,0,3.2,0,0,0,-1]]
 
 
 
@@ -58,7 +59,7 @@ class Brain(object):
 
         self.cube1_pose = None
         self.finished = False
-
+        self.cubes_to_grasp = None
         self.current_pos = [0.0, 0.0]
         self.state = 'initial'
         self.rate = rospy.Rate(30)
@@ -71,12 +72,13 @@ class Brain(object):
             self.key_position_in_map_pose.append(self.calculate_pose_in_map_frame(cube_positions[i]))
 
         self.goal_reached_check = False
-        self.current_goal = -1
+        self.current_goal = None
         self.reach_goal_state = -1
         self.cmd_vel = None
 
         rospy.Subscriber("/cmd_vel", Twist, self.cmd_vel_callback)
         rospy.Subscriber('/ep/odom', Odometry, self.keyLocCheck)
+        rospy.Subscriber('/see_aruco_pose', Odometry, self.see_callback)
         # rospy.Subscriber
 
         rospy.wait_for_service('place_')
@@ -198,15 +200,26 @@ class Brain(object):
             if cube_idx == 3:
                 goal_map.position.x -= 0.6
                 goal_map.position.z = 0.0
-                quat = R.from_euler('z', 0*np.pi).as_quat()
+                quat = R.from_euler('z', 0).as_quat()
                 goal_map.orientation.x = quat[0]
                 goal_map.orientation.y = quat[1]
                 goal_map.orientation.z = quat[2]
                 goal_map.orientation.w = quat[3]
 
+        if place_or_get == "see":
+            goal_map = copy.copy(self.key_position_in_map_pose[-1])
+            goal_map.position.z = 0.0
+            quat = R.from_euler('z', 0).as_quat()
+            goal_map.orientation.x = quat[0]
+            goal_map.orientation.y = quat[1]
+            goal_map.orientation.z = quat[2]
+            goal_map.orientation.w = quat[3]
+
         self.nav_goal_pub(goal_map)
 
     def keyLocCheck(self, msg):
+        if self.current_goal==None:
+            return 
         curr = msg.pose.pose
         current_pos = np.array([curr.position.x, curr.position.y])
         current_quat = np.array([curr.orientation.x, curr.orientation.y, curr.orientation.z, curr.orientation.w])
@@ -219,7 +232,7 @@ class Brain(object):
         angle_error = np.abs((R.from_quat(goal_quat) * R.from_quat(current_quat).inv()).as_euler('ZYX')[0])
 
         # debug
-        rospy.logdebug("xy: " + str(position_error) + "    , angle:" + str(angle_error))
+        rospy.logdebug("xy: " + str(position_error) + "!!!!angle:" + str(angle_error))
         if (position_error < GOAL_POS_THRE and angle_error < GOAL_ANGLE_THRE) and np.linalg.norm(
                 self.cmd_vel) < CMD_VEL_THRE:
             rospy.loginfo("Navigation: reach the navigation goal.")
@@ -237,6 +250,9 @@ class Brain(object):
             return resp1.success
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
+
+    def see_callback(self,msg):
+        self.cubes_to_grasp = msg.detected_ids
 
     # def cube1_pose_callback(self,msg):
     #     if not self.tf_buffer.can_transform("world","camera_aligned_depth_to_color_frame_correct",rospy.Time.now()):
@@ -331,9 +347,13 @@ def main():
     while not rospy.is_shutdown():
         # rospy.loginfo(brain.state)
         if brain.state == 'initial':
-            brain.publish_nav_goal(1,0,'get')
-            brain.state = 'navigation'
+            brain.publish_nav_goal(0,0,'see')
+            brain.state = 'going_to_see'
 
+        if brain.state == 'going_to_see':
+            if brain.cubes_to_grasp != None and np.linalg.norm(brain.cmd_vel) < CMD_VEL_THRE:
+                brain.publish_nav_goal(brain.cubes_to_grasp[0]+1,0,'get')
+                brain.state = 'navigation'
 
         if brain.state == 'navigation':
             if brain.reach_goal_state == True and brain.current_goal == None:

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <!-- Arguments -->
-  <arg name="use_joy_stick" default="true"/>
+  <arg name="use_joy_stick" default="false"/>
   <arg name="open_rviz" default="true"/>
   <arg name="open_reconfigure" default="false"/>
   <arg name="map_file" default="$(find sb_carto_navigation)/maps/map.yaml"/>

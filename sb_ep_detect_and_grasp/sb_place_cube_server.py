@@ -82,8 +82,8 @@ class placeAruco:
         if pos_2_base.all()==None:
             return None
 
-        print("pos_2_base",pos_2_base)
-        print("angle_2_base",angle_2_base)
+        # print("pos_2_base",pos_2_base)
+        # print("angle_2_base",angle_2_base)
         # desired_ang = 
 
         distance_in_x = pos_2_base[0]-desired_pos[0]
@@ -103,7 +103,7 @@ class placeAruco:
 
     def place_ore(self,num):
         rate = rospy.Rate(self.ros_rate)
-        target_pos = [0.25,0,0]
+        target_pos = [0.24,0,0]
         target_ang=0
         gama_x = 0.01
         gama_y = 0.01
@@ -117,8 +117,8 @@ class placeAruco:
                 self.forward_zero()
 
                 print("===== start placing ====")
-                self.reset_arm()
-                rospy.sleep(1)
+                # self.reset_arm()
+                # rospy.sleep(1)
                 self.move_arm0()
                 rospy.sleep(1)
                 self.move_arm()
@@ -152,7 +152,7 @@ class placeAruco:
         # unit in [cm]
         # in the gripper base frame
         move_arm_msg.position.x = 0.90      # TODO
-        move_arm_msg.position.y = 0.12
+        move_arm_msg.position.y = 0.11
         move_arm_msg.position.z = 0
         move_arm_msg.orientation.x = 0.0
         move_arm_msg.orientation.y = 0.0
@@ -166,7 +166,7 @@ class placeAruco:
         # unit in [cm]
         # in the gripper base frame
         move_arm_msg.position.x = 0.2      # TODO
-        move_arm_msg.position.y = 0.12
+        move_arm_msg.position.y = 0.10
         move_arm_msg.position.z = 0
         move_arm_msg.orientation.x = 0.0
         move_arm_msg.orientation.y = 0.0
@@ -248,13 +248,6 @@ class placeAruco:
 def main():
     rospy.init_node('grasp_aruco_node', anonymous=True)
     ap = placeAruco()
-    print("=====init=====")
-    # ap.reset_arm()
-    rospy.sleep(1)
-    print("=====reset arm at beginning=====")
-    # ap.open_gripper()
-    rospy.sleep(1)
-    print("=====open gripper at beginning=====")
     try:
         rospy.spin()
     except KeyboardInterrupt:

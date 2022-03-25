@@ -37,7 +37,7 @@ cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.001308646
                   [2.5751845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
                   [2.57,0,3.15,0,0,0,-1]]
 
-via_positions = [[3.599114990234375, 0.09183745086193085, 1.8005446195602417,0,0,0,-1]]
+via_positions = [[3.499114990234375, 0.09183745086193085, 1.5005446195602417,0,0,0,-1]]
 
 EXCHANGE_POSE = [1.6803152561187744, 1.7498154163360597, 0.08210877216420992, 0, 0, 0, 1]
 EXCHANGE_SEE_RELA_GOALS = [-1.5, -0.3, 0]
@@ -90,6 +90,7 @@ class Brain(object):
         self.place_cli = rospy.ServiceProxy('place_', grasp_place)
 
         self.nav_goal_publisher = rospy.Publisher('/move_base_simple/goal', PoseStamped)
+        self.pub_cancel = rospy.Publisher('/move_base/cancel', actionlib_msgs.msg.GoalID)
 
     def publish_world_tf(self):
         rospy.loginfo("world tf is publishing!")
@@ -236,8 +237,9 @@ class Brain(object):
 
         self.nav_goal_pub(goal_map)
 
-    def pub_via_point_nav(self):
-        goal_map = copy.copy(self.via_position_in_map_pose[0])
+    def pub_via_point_nav(self,idx):
+        goal_map = copy.copy(self.via_position_in_map_pose[idx])
+        goal_map.position.z = 0.0
         quat = R.from_euler('z', np.pi).as_quat()
         goal_map.orientation.x = quat[0]
         goal_map.orientation.y = quat[1]
@@ -291,6 +293,10 @@ class Brain(object):
     def see_callback(self,msg):
         self.cubes_to_grasp = msg.detected_ids
         rospy.loginfo("the cubes i detected are %d,%d,%d"%(self.cubes_to_grasp[0]+1,self.cubes_to_grasp[1]+1,self.cubes_to_grasp[2]+1))
+
+    def cancel_all_goals(self):
+        cancel_msg = actionlib_msgs.msg.GoalID(stamp=rospy.Time.from_sec(0.0), id="")
+        self.pub_cancel.publish(cancel_msg)
 
     # def cube1_pose_callback(self,msg):
     #     if not self.tf_buffer.can_transform("world","camera_aligned_depth_to_color_frame_correct",rospy.Time.now()):
@@ -397,8 +403,9 @@ def main():
         if brain.state == 'navigation':
             if brain.reach_goal_state == True and brain.current_goal == None and np.linalg.norm(brain.cmd_vel) < CMD_VEL_THRE:
                 rospy.loginfo("i ve reached the goal cube!!")
-                goal = actionlib_msgs.msg.GoalID()
-                brain.cancle_publisher.publish(goal)
+
+                brain.cancel_all_goals()# this is important!!
+
                 if gotten_cube == True:
                     brain.state = 'place_cube'
                 else:
@@ -406,22 +413,30 @@ def main():
 
                 brain.reach_goal_state == False # reset flag and navigation is finished
 
+
         if brain.state == 'grasp_cube':
             rospy.loginfo("going to grasp the cube!!")
             ret = brain.grasp()
 
             if ret == True:
                 gotten_cube = True
-                # if brain.cubes_to_grasp[exc_idx-1]==3:# if get 4
-                #     brain.state = 'move_to_via_point_between_4'
-                # else:
-                #     brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
-                #     brain.state = "navigation"
-                brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
-                brain.state = "navigation"
+                if brain.cubes_to_grasp[exc_idx-1]==3:# if get 4
+                    brain.pub_via_point_nav(0)
+                    brain.state = '4_via_navigation'
+                else:
+                    brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
+                    brain.state = "navigation"
 
-        # if brain.state == 'move_to_via_point_between_4':
-        #     brain.pub_via_point_nav()
+
+        if brain.state == '4_via_navigation':
+            if brain.reach_goal_state == True and brain.current_goal == None and np.linalg.norm(brain.cmd_vel) < CMD_VEL_THRE:
+                rospy.loginfo("i ve reached the via point!!")
+
+                brain.cancel_all_goals()
+                
+                brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
+                brain.state = "navigation"               
+
 
         if brain.state == 'place_cube':
             place_success = brain.place(exc_idx-1)

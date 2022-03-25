@@ -4,7 +4,7 @@
   <include file="$(find sb_carto_navigation)/launch/navigation.launch"/>
 
   <!-- detection -->
-  <node pkg="sb_ep_detect_and_grasp" name="marker_detection" type="sb_detect_cube.py" />
+  <node pkg="sb_ep_detect_and_grasp" name="marker_detection" type="sb_detect_cube.py" output="screen"/>
 
   <!-- grasp -->
   <node pkg="sb_ep_detect_and_grasp" name="grasp_server" type="sb_grasp_cube_server.py" />

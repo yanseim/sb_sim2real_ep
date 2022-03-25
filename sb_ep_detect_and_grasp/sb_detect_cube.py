@@ -31,6 +31,7 @@ def pose_aruco_2_ros(rvec, tvec):
 class arucoPose:
     def __init__(self):
         self.aruco_pose_pub = rospy.Publisher("aruco_pose", Pose)
+        self.see_aruco_pose_pub = rospy.Publisher("aruco_pose", Pose)
         
         self.aruco_sink1_pub = rospy.Publisher("aruco_sink1", Pose)
         self.aruco_sink2_pub = rospy.Publisher("aruco_sink2", Pose)

@@ -121,8 +121,8 @@ class placeAruco:
 
                 print("===== start placing ====")
                 # self.reset_arm()
-                rospy.sleep(1)
-                self.move_arm0()
+                # rospy.sleep(1)
+                # self.move_arm0()
                 rospy.sleep(1)
                 self.move_arm()
                 rospy.sleep(1)
@@ -169,7 +169,7 @@ class placeAruco:
         # unit in [cm]
         # in the gripper base frame
         move_arm_msg.position.x = 0.2      # TODO
-        move_arm_msg.position.y = 0.08
+        move_arm_msg.position.y = 0.04
         move_arm_msg.position.z = 0
         move_arm_msg.orientation.x = 0.0
         move_arm_msg.orientation.y = 0.0

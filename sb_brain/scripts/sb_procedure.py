@@ -42,8 +42,8 @@ cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.001308646
 via_positions = [[3.499114990234375, 0.09183745086193085, 1.5005446195602417,0,0,0,-1],
                 [1.00058174, 0.09497403, 2.49986682,0,0,0,-1],
                 [0.80030038356781, 0.08630374819040298, 3.099881172180176,0,0,0,-1],
-                [1.3251845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
-                [2.5751845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1]]
+                [1.5251845836639404, 0.08210877216421068, 2.4196847438812256, 0, 0, 0, -1],
+                [4.5751845836639404, 0.08210877216421068, 2.6196847438812256, 0, 0, 0, -1]]
 
 
 # EXCHANGE_POSE = [1.6803152561187744, 1.7498154163360597, 0.08210877216420992, 0, 0, 0, 1]
@@ -402,14 +402,15 @@ def main():
                 if exc_idx == 3:
                     brain.state = 'OFF'
                 else:
-                    if brain.cubes_to_grasp[exc_idx-1+1]==2:# if be going to get 3
+                    exc_idx += 1 #excuting next cube
+
+                    if brain.cubes_to_grasp[exc_idx-1]==2:# if be going to get 3
                         brain.pub_via_point_nav(3)# place finished to grasp 3 
                         brain.state = 'via_navigation_to_grasp'
-                    elif brain.cubes_to_grasp[exc_idx-1+1]==4:# if be going to get 5
+                    elif brain.cubes_to_grasp[exc_idx-1]==4:# if be going to get 5
                         brain.pub_via_point_nav(4)# place finished to grasp 5
                         brain.state = 'via_navigation_to_grasp'
                     else:                   
-                        exc_idx += 1 #excuting next cube
                         brain.publish_nav_goal(brain.cubes_to_grasp[exc_idx-1]+1, 0, 'get')
                         brain.state = 'navigation'
 

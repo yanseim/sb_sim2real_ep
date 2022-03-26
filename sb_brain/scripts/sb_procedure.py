@@ -37,12 +37,14 @@ cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.001308646
                   [2.57,0,3.15,0,0,0,-1]]
 
 ## grasp 4 to place    grasp 1 to place     grasp 2 to place     place finished to grasp 3 
-## place finished to grasp 5
+## place finished to grasp 5    grasp 5 to place    place finished to grasp 4 
 via_positions = [[3.499114990234375, 0.09183745086193085, 1.5005446195602417,0,0,0,-1],
                 [1.00058174, 0.09497403, 2.49986682,0,0,0,-1],
                 [0.85030038356781, 0.08630374819040298, 3.099881172180176,0,0,0,-1],
                 [1.5251845836639404, 0.08210877216421068, 2.4196847438812256, 0, 0, 0, -1],
-                [4.7751845836639404, 0.08210877216421068, 2.5196847438812256, 0, 0, 0, -1]]
+                [4.7751845836639404, 0.08210877216421068, 2.5196847438812256, 0, 0, 0, -1],
+                [3.6751845836639404, 0.08210877216421068, 1.4196847438812256, 0, 0, 0, -1],
+                [3.2751845836639404, 0.08210877216421068, 2.0196847438812256, 0, 0, 0, -1]]
 
 
 # EXCHANGE_POSE = [1.6803152561187744, 1.7498154163360597, 0.08210877216420992, 0, 0, 0, 1]
@@ -263,7 +265,19 @@ class Brain(object):
             goal_map.orientation.x = quat[0]
             goal_map.orientation.y = quat[1]
             goal_map.orientation.z = quat[2]
-            goal_map.orientation.w = quat[3]                         
+            goal_map.orientation.w = quat[3]    
+        elif idx in [5]:# grasp 5 to place
+            quat = R.from_euler('z', np.pi/2).as_quat()
+            goal_map.orientation.x = quat[0]
+            goal_map.orientation.y = quat[1]
+            goal_map.orientation.z = quat[2]
+            goal_map.orientation.w = quat[3]    
+        elif idx in [6]:# place finished to grasp 4
+            quat = R.from_euler('z', 0).as_quat()
+            goal_map.orientation.x = quat[0]
+            goal_map.orientation.y = quat[1]
+            goal_map.orientation.z = quat[2]
+            goal_map.orientation.w = quat[3]                      
         self.nav_goal_pub(goal_map)
 
     def keyLocCheck(self, msg):
@@ -369,6 +383,9 @@ def main():
                 elif brain.cubes_to_grasp[exc_idx-1]==1:# if get 2
                     brain.pub_via_point_nav(2)
                     brain.state = 'via_navigation_to_place'
+                elif brain.cubes_to_grasp[exc_idx-1]==4:# if get 5
+                    brain.pub_via_point_nav(5)
+                    brain.state = 'via_navigation_to_place'
                 else:
                     brain.publish_nav_goal(0,exc_idx,'place') # go to place the cube
                     brain.state = "navigation"
@@ -405,6 +422,9 @@ def main():
 
                     if brain.cubes_to_grasp[exc_idx-1]==2:# if be going to get 3
                         brain.pub_via_point_nav(3)# place finished to grasp 3 
+                        brain.state = 'via_navigation_to_grasp'
+                    elif brain.cubes_to_grasp[exc_idx-1]==3:# if be going to get 4
+                        brain.pub_via_point_nav(6)# place finished to grasp 4
                         brain.state = 'via_navigation_to_grasp'
                     elif brain.cubes_to_grasp[exc_idx-1]==4:# if be going to get 5
                         brain.pub_via_point_nav(4)# place finished to grasp 5

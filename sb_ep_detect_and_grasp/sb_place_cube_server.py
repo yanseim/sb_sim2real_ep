@@ -165,7 +165,7 @@ class placeAruco:
         move_arm_msg = Pose()
         # unit in [cm]
         # in the gripper base frame
-        move_arm_msg.position.x = 0.22      # TODO
+        move_arm_msg.position.x = 0.21      # TODO
         move_arm_msg.position.y = 0.03
         move_arm_msg.position.z = 0
         move_arm_msg.orientation.x = 0.0

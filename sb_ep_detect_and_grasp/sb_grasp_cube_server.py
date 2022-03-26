@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 import cv2
-import math
+
 import os
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose
@@ -39,6 +39,8 @@ class graspAruco:
         self.ros_rate = 30
 
         self.server = rospy.Service('grasp_', grasp_place, self.server_callback)
+
+        self.count=0
         
         self.grasp_success = False
         # self.place_success = False
@@ -125,10 +127,10 @@ class graspAruco:
         angle_2_base = R.from_quat(quat_2_base).as_euler("YXZ")[0]
         
         def ang_ref(angle):
-            if angle>math.pi/2:
-                angle-=math.pi
-            elif angle<-math.pi/2:
-                angle+=math.pi
+            if angle>np.pi/2:
+                angle-=np.pi
+            elif angle<-np.pi/2:
+                angle+=np.pi
             return angle
         angle_2_base = ang_ref(angle_2_base)
 
@@ -146,9 +148,9 @@ class graspAruco:
         if pos_2_base.all()==None:
             return None
 
-        # print("pos_2_base",pos_2_base)
-        # print("angle_2_base",angle_2_base)
-        # desired_ang = 
+        if self.count%1000==0:
+            print("pos_2_base",pos_2_base)
+            print("angle_2_base",angle_2_base)
 
         distance_in_x = pos_2_base[0]-desired_pos[0]
         distance_in_y = pos_2_base[1]-desired_pos[1]
@@ -156,7 +158,7 @@ class graspAruco:
 
         vel_cmd[0] = 4*self.e_refine(distance_in_x,0.01)
         vel_cmd[1] = 4*self.e_refine(distance_in_y,0.01)
-        vel_cmd[2] = -4*self.e_refine(distance_in_ang,10*math.pi/180)
+        vel_cmd[2] = -4*self.e_refine(distance_in_ang,10*np.pi/180)
 
         vel_cmd = np.clip(np.abs(vel_cmd),[0.11,0.11,0.01],[0.5,0.5,0.5])*np.sign(vel_cmd)
 
@@ -171,16 +173,17 @@ class graspAruco:
         target_ang=0
         gama_x = 0.01
         gama_y = 0.01
-        gama_w = 10*math.pi/180
+        gama_w = 10*np.pi/180
         while not self.grasp_success:
             # print("in the loop")
+            self.count+=1
             distance_in_x = self.pos_2_base[0]-target_pos[0]
             distance_in_y = self.pos_2_base[1]-target_pos[1]
             distance_in_ang = self.angle_2_base-target_ang
             if (abs(distance_in_x) <= gama_x) and (abs(distance_in_y) <= gama_y) and \
                 (abs(distance_in_ang)<gama_w) and self.grasp_success==False:
                 self.forward_zero()
-                rospy.sleep(0.1)
+                rospy.sleep(1)
                 print("===== start to grasp ====")
                 self.move_arm()
                 rospy.sleep(1)

@@ -35,6 +35,8 @@ class placeAruco:
         self.sink_ang_2_base = [None,None,None]
 
         self.ros_rate = 30
+
+        self.count = 0
         
         self.server = rospy.Service('place_', grasp_place, self.server_callback)
         self.vel_cmd=None
@@ -82,9 +84,9 @@ class placeAruco:
         if pos_2_base.all()==None:
             return None
 
-        # print("pos_2_base",pos_2_base)
-        # print("angle_2_base",angle_2_base)
-        # desired_ang = 
+        if self.count%1000==0:
+            print("pos_2_base",pos_2_base)
+            print("angle_2_base",angle_2_base)
 
         distance_in_x = pos_2_base[0]-desired_pos[0]
         distance_in_y = pos_2_base[1]-desired_pos[1]
@@ -109,6 +111,7 @@ class placeAruco:
         gama_y = 0.01
         gama_w = 10*np.pi/180
         while not self.place_success:
+            self.count+=1
             distance_in_x = self.sink_pos_2_base[num][0]-target_pos[0]
             distance_in_y = self.sink_pos_2_base[num][1]-target_pos[1]
             distance_in_ang = self.sink_ang_2_base[num]-target_ang
@@ -118,7 +121,7 @@ class placeAruco:
 
                 print("===== start placing ====")
                 # self.reset_arm()
-                # rospy.sleep(1)
+                rospy.sleep(1)
                 self.move_arm0()
                 rospy.sleep(1)
                 self.move_arm()

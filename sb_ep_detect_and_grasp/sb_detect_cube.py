@@ -71,8 +71,8 @@ class arucoPose:
 
         id_list,tvec_list,rvec_list,idx_chosen_to_pub = marker_detection(cv_image,seg_papram)
 
-        cv2.imshow('frame', cv_image)
-        cv2.waitKey(1)
+        # cv2.imshow('frame', cv_image)
+        # cv2.waitKey(1)
 
         # publish pose to rostopic
         target_detected = False
@@ -101,8 +101,8 @@ class arucoPose:
             sorted_see_marker_msg.detected_ids = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_ids))]
             sorted_see_marker_msg.detected_poses = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_poses))]
 
-            if len(sorted_see_marker_msg.detected_ids)>=2 and self.see_markers == False:
-                if self.see_count<10:
+            if len(sorted_see_marker_msg.detected_ids)==3 and self.see_markers == False:
+                if self.see_count<5:
                     self.see_count+=1
                 else:
                     self.see_aruco_pose_pub.publish(sorted_see_marker_msg)

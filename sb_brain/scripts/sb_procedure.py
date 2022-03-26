@@ -38,15 +38,18 @@ cube_positions = [[1.00058174, 0.09497403, 3.39986682, -0.00076221, -0.001308646
                   [2.57,0,3.15,0,0,0,-1]]
 
 ## grasp 4 to place    grasp 1 to place     grasp 2 to place     place finished to grasp 3 
+## place finished to grasp 5
 via_positions = [[3.499114990234375, 0.09183745086193085, 1.5005446195602417,0,0,0,-1],
                 [1.00058174, 0.09497403, 2.49986682,0,0,0,-1],
                 [0.80030038356781, 0.08630374819040298, 3.099881172180176,0,0,0,-1],
-                [1.3251845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1]]
+                [1.3251845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1],
+                [2.5751845836639404, 0.08210877216421068, 1.8196847438812256, 0, 0, 0, -1]]
 
-EXCHANGE_POSE = [1.6803152561187744, 1.7498154163360597, 0.08210877216420992, 0, 0, 0, 1]
-EXCHANGE_SEE_RELA_GOALS = [-1.5, -0.3, 0]
-EXCHANGE_PLACE_RELA_GOALS = [-0.5, 0, 0]
-EXCHANGE_OFFSET = 0.12  # distance between adjacent letter
+
+# EXCHANGE_POSE = [1.6803152561187744, 1.7498154163360597, 0.08210877216420992, 0, 0, 0, 1]
+# EXCHANGE_SEE_RELA_GOALS = [-1.5, -0.3, 0]
+# EXCHANGE_PLACE_RELA_GOALS = [-0.5, 0, 0]
+# EXCHANGE_OFFSET = 0.12  # distance between adjacent letter
 
 GOAL_POS_THRE = 0.1
 GOAL_ANGLE_THRE = 0.1
@@ -256,7 +259,7 @@ class Brain(object):
             goal_map.orientation.y = quat[1]
             goal_map.orientation.z = quat[2]
             goal_map.orientation.w = quat[3]  
-        elif idx ==3:# place finished to grasp 3 
+        elif idx in [3,4]:# place finished to grasp 3     place finished to grasp 5
             quat = R.from_euler('z', 0).as_quat()
             goal_map.orientation.x = quat[0]
             goal_map.orientation.y = quat[1]
@@ -342,6 +345,7 @@ def main():
                 rospy.loginfo("i ve reached the goal cube!!")
 
                 brain.cancel_all_goals()# this is important!!
+                rospy.sleep(1)
 
                 if gotten_cube == True:
                     brain.state = 'place_cube'
@@ -386,7 +390,7 @@ def main():
 
                 brain.cancel_all_goals()
                 
-                brain.publish_nav_goal(0,exc_idx,'grasp') # go to grasp the cube
+                brain.publish_nav_goal(brain.cubes_to_grasp[exc_idx-1]+1, 0, 'get')# go to grasp the cube
                 brain.state = "navigation"    
 
         if brain.state == 'place_cube':
@@ -399,13 +403,13 @@ def main():
                     brain.state = 'OFF'
                 else:
                     if brain.cubes_to_grasp[exc_idx-1+1]==2:# if be going to get 3
-                        brain.pub_via_point_nav(3)
+                        brain.pub_via_point_nav(3)# place finished to grasp 3 
+                        brain.state = 'via_navigation_to_grasp'
+                    elif brain.cubes_to_grasp[exc_idx-1+1]==4:# if be going to get 5
+                        brain.pub_via_point_nav(4)# place finished to grasp 5
                         brain.state = 'via_navigation_to_grasp'
                     else:                   
                         exc_idx += 1 #excuting next cube
-                        # if detection is needed to set cube_idx in publish_nav_goal()
-                        # brain.detectlist2goal()
-                        # here exc_idx == cube_idx i.e. getting cube 123 sequentially
                         brain.publish_nav_goal(brain.cubes_to_grasp[exc_idx-1]+1, 0, 'get')
                         brain.state = 'navigation'
 

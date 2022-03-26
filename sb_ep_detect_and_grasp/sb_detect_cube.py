@@ -101,7 +101,7 @@ class arucoPose:
             sorted_see_marker_msg.detected_ids = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_ids))]
             sorted_see_marker_msg.detected_poses = [i for _,i in sorted(zip(x_list,see_marker_msg.detected_poses))]
 
-            if len(sorted_see_marker_msg.detected_ids)==3 and self.see_markers == False:
+            if len(sorted_see_marker_msg.detected_ids)>=2 and self.see_markers == False:
                 if self.see_count<10:
                     self.see_count+=1
                 else:

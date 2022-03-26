@@ -183,7 +183,7 @@ class graspAruco:
             if (abs(distance_in_x) <= gama_x) and (abs(distance_in_y) <= gama_y) and \
                 (abs(distance_in_ang)<gama_w) and self.grasp_success==False:
                 self.forward_zero()
-                rospy.sleep(1)
+                rospy.sleep(0.1)
                 print("===== start to grasp ====")
                 self.move_arm()
                 rospy.sleep(1)

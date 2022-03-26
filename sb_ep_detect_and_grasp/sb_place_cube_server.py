@@ -107,9 +107,9 @@ class placeAruco:
         rate = rospy.Rate(self.ros_rate)
         target_pos = [0.24,0,0]
         target_ang=0
-        gama_x = 0.01
-        gama_y = 0.01
-        gama_w = 10*np.pi/180
+        gama_x = 0.008
+        gama_y = 0.008
+        gama_w = 5*np.pi/180
         while not self.place_success:
             self.count+=1
             distance_in_x = self.sink_pos_2_base[num][0]-target_pos[0]
@@ -120,16 +120,13 @@ class placeAruco:
                 self.forward_zero()
 
                 print("===== start placing ====")
-                # self.reset_arm()
-                # rospy.sleep(1)
-                # self.move_arm0()
-                rospy.sleep(1)
+                # rospy.sleep(0.1)
                 self.move_arm()
-                rospy.sleep(1)
+                rospy.sleep(0.8)
                 self.open_gripper()
-                rospy.sleep(1)
+                rospy.sleep(0.2)
                 self.reset_arm()
-                rospy.sleep(1)
+                rospy.sleep(0.1)
                 self.close_gripper()
                 self.forward_zero()
                 rospy.sleep(1)
@@ -168,8 +165,8 @@ class placeAruco:
         move_arm_msg = Pose()
         # unit in [cm]
         # in the gripper base frame
-        move_arm_msg.position.x = 0.2      # TODO
-        move_arm_msg.position.y = 0.04
+        move_arm_msg.position.x = 0.22      # TODO
+        move_arm_msg.position.y = 0.03
         move_arm_msg.position.z = 0
         move_arm_msg.orientation.x = 0.0
         move_arm_msg.orientation.y = 0.0
